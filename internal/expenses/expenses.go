@@ -1,4 +1,4 @@
-package main
+package expenses
 
 import (
 	"encoding/json"
@@ -8,58 +8,63 @@ import (
 )
 
 type expense struct {
-	Id          int       `json:"id"`
-	Amount      float64   `json:"amount"`
-	Category    string    `json:"category"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"description"`
+	Id          int
+	Category    string
+	Amount      float64
+	Description string
+	Date        time.Time
 }
 
-func main() {
-	loadExpenses()
-	editExpense(2, 100, "food", "Aaaaaaaaaaaaaaaaaaa", nil)
+// Error implements error.
+func (e *expense) Error() string {
+	panic("unimplemented")
 }
 
-func newExpense(id int, amount float64, category string, date time.Time, description string) *expense {
+func newExpense(id int, category string, amount float64, description string, date time.Time) *expense {
 	return &expense{
 		Id:          id,
-		Amount:      amount,
 		Category:    category,
-		Date:        time.Now(),
+		Amount:      amount,
 		Description: description,
+		Date:        time.Now(),
 	}
 }
 
-var expenses []*expense // Глобальный слайс трат
-func AddExpense(amount float64, category string, description string) *expense {
-	var newExpenseId int
-	if len(expenses) == 0 {
-		newExpenseId = 1
-	} else {
-		newExpenseId = expenses[len(expenses)-1].Id + 1
-	}
+var expenses []*expense
 
-	exp := newExpense(newExpenseId, amount, category, time.Now(), description)
-	expenses = append(expenses, exp) //сохранение в слайс трат
-	saveExpenses()
+func AddExpense(amount float64, category string, description string) *expense {
+	var NewExpenseID int
+	if len(expenses) == 0 {
+		NewExpenseID = 1
+	} else {
+		NewExpenseID = expenses[len(expenses)-1].Id + 1
+	}
+	exp := newExpense(NewExpenseID, category, amount, description, time.Now())
+	expenses = append(expenses, exp)
+	saveExpense()
 	return exp
 }
 
-func saveExpenses() {
-	f, err := os.Create("expenses.json")
+func saveExpense() {
+	if err := os.MkdirAll("data", 0755); err != nil {
+		panic(err)
+	}
+
+	f, err := os.Create("data/expenses.json")
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	err = json.NewEncoder(f).Encode(expenses)
-	if err != nil {
+	encoder := json.NewEncoder(f)
+	encoder.SetIndent("", "    ")
+	if err := encoder.Encode(expenses); err != nil {
 		panic(err)
 	}
 }
 
 func loadExpenses() error {
-	f, err := os.Open("expenses.json")
+	f, err := os.Open("data/expenses.json")
 	if err != nil {
 		return err
 	}
@@ -80,7 +85,7 @@ func delExpenses(id int) (*expense, error) {
 			for j := i; j < len(expenses); j++ {
 				expenses[j].Id = j + 1
 			}
-			saveExpenses()
+			saveExpense()
 			return deletedExp, nil
 		}
 	}
@@ -96,9 +101,13 @@ func editExpense(id int, amount float64, category string, description string, da
 			if date != nil {
 				exp.Date = *date
 			}
-			saveExpenses()
+			saveExpense()
 			return exp, nil
 		}
 	}
 	return nil, fmt.Errorf("Трата с id %d не найдена", id)
+}
+
+func ListExpenses() {
+
 }
