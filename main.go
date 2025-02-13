@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/cqwrr/expenseTracker/cmd/root"
+	"github.com/cqwrr/expenseTracker/cmd"
 )
 
 func main() {

@@ -1,8 +1,13 @@
-package main
+package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
+
+var rootCmd = NewRootCmd()
 
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -12,5 +17,14 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(newAddCmd())
+	cmd.AddCommand(NewListCmd())
+	cmd.AddCommand(NewDeleteCmd())
 	return cmd
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

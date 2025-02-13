@@ -3,6 +3,7 @@ package expenses
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
@@ -15,7 +16,6 @@ type expense struct {
 	Date        time.Time
 }
 
-// Error implements error.
 func (e *expense) Error() string {
 	panic("unimplemented")
 }
@@ -33,6 +33,7 @@ func newExpense(id int, category string, amount float64, description string, dat
 var expenses []*expense
 
 func AddExpense(amount float64, category string, description string) *expense {
+	ReadExpensesFile()
 	var NewExpenseID int
 	if len(expenses) == 0 {
 		NewExpenseID = 1
@@ -72,12 +73,19 @@ func loadExpenses() error {
 
 	err = json.NewDecoder(f).Decode(&expenses)
 	if err != nil {
+		// Если ошибка равна EOF, то файл пустой, инициализируем пустой срез расходов.
+		if err == io.EOF {
+			expenses = []*expense{}
+			return nil
+		}
 		return err
 	}
 	return nil
 }
 
-func delExpenses(id int) (*expense, error) {
+func DelExpenses(id int) (*expense, error) {
+	ReadExpensesFile()
+
 	for i, exp := range expenses {
 		if exp.Id == id {
 			deletedExp := exp
@@ -92,7 +100,9 @@ func delExpenses(id int) (*expense, error) {
 	return nil, fmt.Errorf("Трата с id %d не найдена", id)
 }
 
-func editExpense(id int, amount float64, category string, description string, date *time.Time) (*expense, error) {
+func EditExpense(id int, amount float64, category string, description string, date *time.Time) (*expense, error) {
+	ReadExpensesFile()
+
 	for _, exp := range expenses {
 		if exp.Id == id {
 			exp.Amount = amount
@@ -108,6 +118,31 @@ func editExpense(id int, amount float64, category string, description string, da
 	return nil, fmt.Errorf("Трата с id %d не найдена", id)
 }
 
-func ListExpenses() {
+func ReadExpensesFile() {
+	if err := loadExpenses(); err != nil {
+		// Если ошибка не связана с отсутствием файла, вызываем панику
+		if !os.IsNotExist(err) {
+			panic(fmt.Errorf("ошибка загрузки трат: %v", err))
+		}
+		// Если файл не найден, инициализируем пустой срез
+		expenses = []*expense{}
+	}
 
+}
+
+func ListExpenses() {
+	if err := loadExpenses(); err != nil {
+		fmt.Printf("Ошибка загрузки расходов: %v\n", err)
+		return
+	}
+
+	if len(expenses) == 0 {
+		fmt.Println("Нет записей о тратах")
+		return
+	}
+
+	for _, exp := range expenses {
+		fmt.Printf("ID: %d | Категория: %s | Сумма: %.2f | Описание: %s | Дата: %s\n",
+			exp.Id, exp.Category, exp.Amount, exp.Description, exp.Date.Format("2006-01-02 15:04:05"))
+	}
 }

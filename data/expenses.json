@@ -1,9 +1,16 @@
 [
     {
         "Id": 1,
-        "Category": "12",
-        "Amount": 12,
-        "Description": "12",
-        "Date": "2025-02-12T03:30:01.430812+04:00"
+        "Category": "general",
+        "Amount": 100,
+        "Description": "sexxx",
+        "Date": "2025-02-13T04:44:18.325587+04:00"
+    },
+    {
+        "Id": 2,
+        "Category": "Entertaiment",
+        "Amount": 100,
+        "Description": "sexxxx",
+        "Date": "2025-02-13T05:08:47.973846+04:00"
     }
 ]

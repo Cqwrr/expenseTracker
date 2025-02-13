@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -30,7 +30,10 @@ func newAddCmd() *cobra.Command {
 
 func RunAddExpenceCmd(args []string) error {
 	if Amount < 0 {
-		return fmt.Errorf("ammount cannot be negative")
+		return fmt.Errorf("amount cannot be negative")
 	}
-	return expenses.AddExpense(Amount, Category, Description)
+	exp := expenses.AddExpense(Amount, Category, Description)
+	fmt.Printf("Добавлен расход: ID %d, Категория: %s, Сумма: %.2f, Описание: %s\n",
+		exp.Id, exp.Category, exp.Amount, exp.Description)
+	return nil
 }
